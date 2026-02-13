@@ -1,0 +1,133 @@
+version: '3.5'
+
+networks:
+  cluster-network:
+
+services:
+  seed:
+    networks:
+      cluster-network:
+        aliases:
+          - seed
+    image: magkairatov/project_bi_msv005:latest
+    container_name: seed
+    ports:
+      - '2553:2553'
+      - '8000:6677'
+      - '8020:7766'
+    environment:
+      NON_PROXY_HOSTS: zookeep,broker1,broker2,broker3,ksql1,ksql4,ksql5,ksql6,casdb1,casdb2,casdb3
+      SERVER_IP: 0.0.0.0
+      SERVER_PORT: 6677
+      WS_SERVER_PORT: 7766
+      CLUSTER_IP: seed
+      CLUSTER_SEED_IP: seed
+      SCHEMA_REGISTRY_URL: "http://zookeep:8081"
+      KSQLDB_CONTACT_POINTS: "ksql4.hsbk.nb:8088,ksql5.hsbk.nb:8088,ksql6.hsbk.nb:8088"
+      NODE_ROLES: 'websocket_api'
+      TZ: "Asia/Almaty"
+      command: >
+        sh -c "ln -snf /usr/share/zoneinfo/Asia/Almaty /etc/localtime &&
+        echo "Asia/Almaty" > /etc/timezone"
+
+  node1:
+    networks:
+      cluster-network:
+        aliases:
+          - node1
+    image: magkairatov/project_bi_msv005:latest
+    container_name: node1
+    ports:
+      - '8001:6677'
+      - '8021:7766'
+    environment:
+      NON_PROXY_HOSTS: zookeep,broker1,broker2,broker3,ksql1,ksql4,ksql5,ksql6,casdb1,casdb2,casdb3
+      SERVER_IP: 0.0.0.0
+      SERVER_PORT: 6677
+      WS_SERVER_PORT: 7766
+      CLUSTER_IP: node1
+      CLUSTER_PORT: 1600
+      CLUSTER_SEED_IP: seed
+      CLUSTER_SEED_PORT: 2553
+      SCHEMA_REGISTRY_URL: "http://zookeep:8081"
+      KSQLDB_CONTACT_POINTS: "ksql4.hsbk.nb:8088,ksql5.hsbk.nb:8088,ksql6.hsbk.nb:8088"
+      NODE_ROLES: 'rest_api, stream_subscriber'
+      TZ: "Asia/Almaty"
+      command: >
+        sh -c "ln -snf /usr/share/zoneinfo/Asia/Almaty /etc/localtime &&
+        echo "Asia/Almaty" > /etc/timezone"
+
+  node2:
+    networks:
+      cluster-network:
+        aliases:
+          - node2
+    image: magkairatov/project_bi_msv005:latest
+    container_name: node2
+    ports:
+      - '8005:6677'
+      - '8022:7766'
+    environment:
+      NON_PROXY_HOSTS: zookeep,broker1,broker2,broker3,ksql1,ksql4,ksql5,ksql6,casdb1,casdb2,casdb3
+      SERVER_IP: 0.0.0.0
+      SERVER_PORT: 6677
+      WS_SERVER_PORT: 7766
+      CLUSTER_IP: node2
+      CLUSTER_PORT: 1600
+      CLUSTER_SEED_IP: seed
+      CLUSTER_SEED_PORT: 2553
+      SCHEMA_REGISTRY_URL: "http://zookeep:8081"
+      KSQLDB_CONTACT_POINTS: "ksql4.hsbk.nb:8088,ksql5.hsbk.nb:8088,ksql6.hsbk.nb:8088"
+      NODE_ROLES: 'rest_api, stream_subscriber'
+      TZ: "Asia/Almaty"
+      command: >
+        sh -c "ln -snf /usr/share/zoneinfo/Asia/Almaty /etc/localtime &&
+        echo "Asia/Almaty" > /etc/timezone"
+
+  node3:
+    networks:
+      cluster-network:
+        aliases:
+          - node3
+    image: magkairatov/project_bi_msv005:latest
+    container_name: node3
+    ports:
+      - '8003:6677'
+      - '8023:7766'
+    environment:
+      NON_PROXY_HOSTS: zookeep,broker1,broker2,broker3,ksql1,ksql4,ksql5,ksql6,casdb1,casdb2,casdb3
+      SERVER_IP: 0.0.0.0
+      SERVER_PORT: 6677
+      WS_SERVER_PORT: 7766
+      CLUSTER_IP: node3
+      CLUSTER_PORT: 1600
+      CLUSTER_SEED_IP: seed
+      CLUSTER_SEED_PORT: 2553
+      SCHEMA_REGISTRY_URL: "http://zookeep:8081"
+      KSQLDB_CONTACT_POINTS: "ksql4.hsbk.nb:8088,ksql5.hsbk.nb:8088,ksql6.hsbk.nb:8088"
+      NODE_ROLES: 'rest_api, stream_subscriber'
+      TZ: "Asia/Almaty"
+      command: >
+        sh -c "ln -snf /usr/share/zoneinfo/Asia/Almaty /etc/localtime &&
+        echo "Asia/Almaty" > /etc/timezone"
+
+  nginx:
+    networks:
+      cluster-network:
+        aliases:
+          - nginx
+    image: nginx:latest
+    container_name: nginx
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/logs/:/etc/nginx/logs
+      - ./nginx/cache/:/etc/nginx/cache
+      - ./nginx/www/:/var/www
+    ports:
+      - 80:80
+    environment:
+      TZ: "Asia/Almaty"
+      command: >
+        sh -c "ln -snf /usr/share/zoneinfo/Asia/Almaty /etc/localtime &&
+        echo "Asia/Almaty" > /etc/timezone"
